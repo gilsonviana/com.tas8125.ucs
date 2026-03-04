@@ -7,6 +7,8 @@ services:
     ports:
       - "3000:3000"
     environment:
+      # REACT_APP_API_URL is embedded in the JS bundle and used by the browser,
+      # not by the container itself — so this must be the host-accessible URL.
       - REACT_APP_API_URL=http://localhost:8080
       - CHOKIDAR_USEPOLLING=true
     command: npm start

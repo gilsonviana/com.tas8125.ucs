@@ -5,17 +5,18 @@ declare(strict_types=1);
 // ---------------------------------------------------------------------------
 // CORS headers — restrict Access-Control-Allow-Origin to specific origins
 // in production instead of using the wildcard '*'.
-// ---------------------------------------------------------------------------
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type');
-header('Content-Type: application/json; charset=UTF-8');
 
 // Handle pre-flight OPTIONS request
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(204);
     exit;
 }
+
+// All responses in this API are JSON.
+header('Content-Type: application/json; charset=UTF-8');
 
 // ---------------------------------------------------------------------------
 // Autoloader  (maps namespace App\ → <root>/src/)

@@ -1,0 +1,18 @@
+# Dependencies
+frontend/node_modules/
+backend/vendor/
+
+# Environment files
+.env
+frontend/.env
+backend/.env
+
+# Build artifacts
+frontend/build/
+
+# OS
+.DS_Store
+*.log
+
+# Docker
+mysql_data/

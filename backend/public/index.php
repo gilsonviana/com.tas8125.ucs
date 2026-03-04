@@ -3,7 +3,8 @@
 declare(strict_types=1);
 
 // ---------------------------------------------------------------------------
-// CORS headers
+// CORS headers — restrict Access-Control-Allow-Origin to specific origins
+// in production instead of using the wildcard '*'.
 // ---------------------------------------------------------------------------
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');

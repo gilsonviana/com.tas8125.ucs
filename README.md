@@ -1,146 +1,127 @@
 # com.tas8125.ucs
 
-A web application scaffold with a **ReactJS** frontend and a **plain PHP** backend backed by **MySQL**.
+Aplicação web com frontend em **React + TypeScript**, backend em **PHP puro** e banco de dados **MySQL**, totalmente orquestrada via Docker.
 
 ---
 
-## Project Structure
+## Estrutura do Projeto
 
 ```
 .
-├── docker-compose.yml          # Orchestrates all three services
-├── .gitignore
-├── frontend/                   # React 18 application
+├── docker-compose.yml          # Orquestra os três serviços
+├── frontend/                   # Aplicação React 18 + TypeScript
 │   ├── public/
 │   │   └── index.html
 │   ├── src/
-│   │   ├── index.js            # React entry point (createRoot)
-│   │   ├── App.js              # Root component – fetches /items from the API
+│   │   ├── index.tsx           # Ponto de entrada do React
+│   │   ├── App.tsx             # Componente raiz – busca /vagas da API
 │   │   ├── App.css
 │   │   ├── index.css
-│   │   └── components/        # Place your reusable components here
-│   ├── package.json
-│   └── .env.example
-├── backend/                    # Plain PHP 8.2 REST API
+│   │   ├── react-app-env.d.ts  # Declarações de tipo do CRA
+│   │   └── components/        # Coloque seus componentes reutilizáveis aqui
+│   ├── tsconfig.json
+│   └── package.json
+├── backend/                    # API REST em PHP 8.2
+│   ├── Dockerfile
 │   ├── public/
-│   │   ├── index.php           # Entry point – CORS, autoloader, router
-│   │   └── .htaccess           # Apache rewrite rules
+│   │   ├── index.php           # CORS, autoloader e roteador
+│   │   └── .htaccess           # Regras de reescrita do Apache
 │   └── src/
 │       ├── Config/
-│       │   └── Database.php    # PDO singleton
+│       │   └── Database.php    # Conexão PDO (singleton)
 │       ├── Controllers/
-│       │   └── ExampleController.php
+│       │   ├── UsuarioController.php
+│       │   └── VagaController.php
 │       └── Models/
-│           └── ExampleModel.php
+│           ├── UsuarioModel.php
+│           └── VagaModel.php
 └── database/
-    ├── schema.sql              # Table definitions
-    └── seed.sql                # Sample rows
+    ├── schema.sql              # Criação das tabelas
+    └── seed.sql                # Dados de exemplo
 ```
 
 ---
 
-## Quick Start (Docker)
+## Pré-requisitos
 
-### Prerequisites
+Antes de começar, instale:
 
-- [Docker](https://docs.docker.com/get-docker/) ≥ 24
-- [Docker Compose](https://docs.docker.com/compose/install/) v2
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) (inclui o Docker Compose)
 
-### 1. Clone and configure
+> Nenhuma outra instalação é necessária. Node.js e PHP rodam dentro dos contêineres.
+
+---
+
+## Como Executar
+
+### 1. Clone o repositório
 
 ```bash
-# Copy environment files
+git clone <url-do-repositorio>
+cd com.tas8125.ucs
+```
+
+### 2. Configure as variáveis de ambiente
+
+```bash
 cp frontend/.env.example frontend/.env
 cp backend/.env.example  backend/.env
 ```
 
-### 2. Start all services
+> Os arquivos `.env` já vêm com valores padrão para desenvolvimento local. Não é necessário editar nada para rodar pela primeira vez.
+
+### 3. Suba os serviços
 
 ```bash
 docker compose up --build
 ```
 
-| Service  | URL                    |
+Na primeira execução o Docker vai baixar as imagens e instalar as dependências — isso pode demorar alguns minutos.
+
+Quando aparecer `Compiled successfully` no terminal, acesse:
+
+| Serviço  | Endereço               |
 |----------|------------------------|
 | Frontend | http://localhost:3000  |
 | Backend  | http://localhost:8080  |
 | MySQL    | localhost:3306         |
 
-### 3. Stop services
+### 4. Parar os serviços
 
 ```bash
-docker compose down          # keep data volume
-docker compose down -v       # also remove MySQL data
+docker compose down        # mantém os dados do banco
+docker compose down -v     # apaga também os dados do banco
 ```
 
 ---
 
-## Running Without Docker
+## Endpoints da API
 
-### Frontend
+URL base: `http://localhost:8080`
 
-```bash
-cd frontend
-npm install
-cp .env.example .env         # edit REACT_APP_API_URL if needed
-npm start                    # http://localhost:3000
-```
+| Método | Caminho          | Descrição               |
+|--------|------------------|-------------------------|
+| GET    | /usuarios        | Lista todos os usuários |
+| GET    | /usuarios/{id}   | Busca um usuário        |
+| GET    | /vagas           | Lista todas as vagas    |
+| GET    | /vagas/{id}      | Busca uma vaga          |
 
-### Backend
-
-Serve `backend/public/` with any Apache virtual-host that has `mod_rewrite` enabled, or use the PHP built-in server (routing must be handled manually):
+### Exemplo
 
 ```bash
-cd backend/public
-php -S localhost:8080 index.php
-```
+# Listar todas as vagas
+curl http://localhost:8080/vagas
 
-Set the environment variables before starting:
-
-```bash
-export DB_HOST=127.0.0.1
-export DB_NAME=appdb
-export DB_USER=appuser
-export DB_PASSWORD=apppassword
-```
-
-### Database
-
-```bash
-mysql -u root -p appdb < database/schema.sql
-mysql -u root -p appdb < database/seed.sql
+# Buscar uma vaga específica
+curl http://localhost:8080/vagas/1
 ```
 
 ---
 
-## API Endpoints
+## Notas de Desenvolvimento
 
-Base URL: `http://localhost:8080`
-
-| Method | Path         | Description          |
-|--------|--------------|----------------------|
-| GET    | /items       | List all items       |
-| GET    | /items/{id}  | Get a single item    |
-| POST   | /items       | Create a new item    |
-| PUT    | /items/{id}  | Update an item       |
-| DELETE | /items/{id}  | Delete an item       |
-
-### Example request
-
-```bash
-# Create an item
-curl -X POST http://localhost:8080/items \
-  -H "Content-Type: application/json" \
-  -d '{"name":"New item","description":"A sample item"}'
-
-# List all items
-curl http://localhost:8080/items
-```
-
----
-
-## Development Notes
-
-- **Adding a new resource** – duplicate `ExampleController.php` and `ExampleModel.php`, then register the new routes in `backend/public/index.php`.
-- **Frontend environment** – all `REACT_APP_*` variables in `frontend/.env` are injected at build time by Create React App.
-- **CORS** – the wildcard `Access-Control-Allow-Origin: *` in `index.php` is fine for local development; restrict it to specific origins before deploying to production.
+- **Adicionando um novo recurso** — crie um novo Controller em `backend/src/Controllers/` e um Model em `backend/src/Models/`, depois registre as rotas em `backend/public/index.php`.
+- **Variáveis de ambiente do frontend** — todas as variáveis `REACT_APP_*` em `frontend/.env` são injetadas em tempo de build pelo Create React App.
+- **TypeScript** — o frontend usa TypeScript 4.x (compatível com `react-scripts` 5). Os tipos ficam definidos junto ao componente que os usa, em `App.tsx`.
+- **CORS** — o `Access-Control-Allow-Origin: *` em `index.php` é adequado para desenvolvimento local. Em produção, substitua pelo domínio real do frontend.
+- **Banco de dados** — se precisar recriar o banco do zero (ex: após alterar `schema.sql` ou `seed.sql`), rode `docker compose down -v && docker compose up`.

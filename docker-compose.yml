@@ -7,8 +7,6 @@ services:
     ports:
       - "3000:3000"
     environment:
-      # REACT_APP_API_URL is embedded in the JS bundle and used by the browser,
-      # not by the container itself — so this must be the host-accessible URL.
       - REACT_APP_API_URL=http://localhost:8080
       - CHOKIDAR_USEPOLLING=true
     command: npm start
@@ -16,9 +14,10 @@ services:
       - backend
 
   backend:
-    image: php:8.2-apache
+    build: ./backend
     volumes:
-      - ./backend:/var/www/html
+      - ./backend/public:/var/www/html
+      - ./backend/src:/var/www/html/src
     ports:
       - "8080:80"
     environment:
@@ -28,6 +27,20 @@ services:
       - DB_PASSWORD=apppassword
     depends_on:
       - db
+    command: >
+      bash -c "
+        a2enmod rewrite &&
+        echo export DB_HOST=$$DB_HOST         >> /etc/apache2/envvars &&
+        echo export DB_NAME=$$DB_NAME         >> /etc/apache2/envvars &&
+        echo export DB_USER=$$DB_USER         >> /etc/apache2/envvars &&
+        echo export DB_PASSWORD=$$DB_PASSWORD >> /etc/apache2/envvars &&
+        apache2-foreground"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80/index.php"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 10s
 
   db:
     image: mysql:8.0
@@ -42,6 +55,12 @@ services:
       - mysql_data:/var/lib/mysql
       - ./database/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
       - ./database/seed.sql:/docker-entrypoint-initdb.d/02-seed.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 10s
 
 volumes:
   mysql_data:

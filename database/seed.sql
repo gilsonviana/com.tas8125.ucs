@@ -1,3 +1,5 @@
+SET NAMES 'utf8mb4' COLLATE 'utf8mb4_unicode_ci';
+
 -- -------------------------------------------------------------
 --  Usuários
 --  Senhas geradas com password_hash() do PHP (bcrypt)

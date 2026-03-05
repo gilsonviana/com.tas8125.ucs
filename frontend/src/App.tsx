@@ -1,27 +1,40 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080';
+const API_URL = process.env.REACT_APP_API_URL ?? 'http://localhost:8080';
 
-function App() {
-  const [items, setItems] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+interface Vaga {
+  id: number;
+  titulo: string;
+  empresa: string;
+  setor_id: number;
+  cidade: string;
+  descricao: string;
+  requisitos: string | null;
+  ativa: 0 | 1;
+  publicado_em: string;
+  atualizado_em: string;
+}
+
+function App(): React.JSX.Element {
+  const [items, setVagas] = useState<Vaga[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch(`${API_URL}/items`)
+    fetch(`${API_URL}/vagas`)
       .then((res) => {
         if (!res.ok) {
           throw new Error(`HTTP error ${res.status}`);
         }
-        return res.json();
+        return res.json() as Promise<Vaga[]>;
       })
       .then((data) => {
-        setItems(data);
+        setVagas(data);
         setLoading(false);
       })
-      .catch((err) => {
-        setError(err.message);
+      .catch((err: unknown) => {
+        setError(err instanceof Error ? err.message : 'Unknown error');
         setLoading(false);
       });
   }, []);
@@ -34,7 +47,7 @@ function App() {
       </header>
 
       <main className="App-main">
-        <h2>Items</h2>
+        <h2>Vagas</h2>
 
         {loading && <p className="App-loading">Loading items...</p>}
 
@@ -50,10 +63,13 @@ function App() {
           <ul className="App-list">
             {items.map((item) => (
               <li key={item.id} className="App-list-item">
-                <strong>{item.name}</strong>
-                {item.description && (
-                  <span className="App-list-item-desc">{item.description}</span>
-                )}
+                <strong>{item.titulo}</strong>
+                <span>{item.empresa} — {item.cidade}</span>
+                <p>{item.descricao}</p>
+                {item.requisitos && <p><em>Requisitos: {item.requisitos}</em></p>}
+                <small>
+                  {item.ativa ? 'Ativa' : 'Inativa'} · Publicada em {item.publicado_em}
+                </small>
               </li>
             ))}
           </ul>
